@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html ng-app="demoapp">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/angular-scroll/angular-scroll.min.js"></script>
+    <script src="../dist/js/fc-presentation.js"></script>
+    <script>
+        var app = angular.module("demoapp", ['fc.presentation']);
+    </script>
+    <style>
+        .presentation-slide {
+            height: 700px;
+        }
+        .fc-presentation-controls {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+        }
+    </style>
+</head>
+<body>
+<fc-presentation>
+    <fc-presentation-slide><h1>Slide1</h1></fc-presentation-slide>
+    <fc-presentation-slide><h1>Slide2</h1></fc-presentation-slide>
+    <fc-presentation-slide><h1>Slide3</h1></fc-presentation-slide>
+    <fc-presentation-slide><h1>Slide4</h1></fc-presentation-slide>
+    <fc-presentation-slide><h1>Slide5</h1></fc-presentation-slide>
+    <fc-presentation-slide><h1>Slide6</h1></fc-presentation-slide>
+    <fc-presentation-controls>
+        <button ng-if="activeSlide < slides.length-1" class="indicator" ng-class="{active:activeSlide==0}" ng-click="slideTo(activeSlide+1)">Onwards!</button>
+        <button ng-if="activeSlide == slides.length-1" class="indicator" ng-class="{active:activeSlide==0}" ng-click="slideTo(0)">Back!</button>
+    </fc-presentation-controls>
+</fc-presentation>
+</body>
+</html>
