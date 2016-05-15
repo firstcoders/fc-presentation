@@ -124,7 +124,7 @@
                     return parent.isActive(element);
                 };
             },
-            template: '<div class="presentation-slide" ng-class="{active:isActive()}" ng-transclude></div>'
+            template: '<div class="fc-presentation-slide" ng-class="{active:isActive()}" ng-transclude></div>'
         };
     })
 
