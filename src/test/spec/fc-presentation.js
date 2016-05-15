@@ -4,8 +4,6 @@ describe("FcPresentation directive Test", function() {
 
     beforeEach(module('fc.presentation'));
 
-    var mockLoader = {};
-
     beforeEach(inject(function($rootScope, $compile, _$document_, $q) {
         var testMarkup =
             '<fc-presentation>' +
@@ -38,6 +36,11 @@ describe("FcPresentation directive Test", function() {
         expect(angular.element(slides[1]).hasClass('presentation-slide')).toBe(true);
     });
 
-    it('Should render', function() {
+    it('Should set an active class when a slide is visible', function() {
+        //@todo
+    });
+
+    it('Should scroll to a slide when clicking a button', function() {
+        //@todo
     });
 });
