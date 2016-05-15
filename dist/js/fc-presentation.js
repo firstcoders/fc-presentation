@@ -6,7 +6,7 @@
  * @author Mark Cremer <mark@firstcoders.co.uk>
  */
 (function() {
-angular.module('fc.presentation', ['duScroll'])
+angular.module('fc-presentation', ['duScroll'])
     .directive('fcPresentation', ['$document', '$timeout', '$window', function($document, $timeout, $window) {
         return {
             restrict: 'E',

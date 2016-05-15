@@ -2,7 +2,7 @@ describe("FcPresentation directive Test", function() {
 
     var $elem, elem, $scope, $doc, resource;
 
-    beforeEach(module('fc.presentation'));
+    beforeEach(module('fc-presentation'));
 
     beforeEach(inject(function($rootScope, $compile, _$document_, $q) {
         var testMarkup =

@@ -6,7 +6,7 @@
 (function() {
     'use strict';
 
-    angular.module('fc.presentation', ['duScroll'])
+    angular.module('fc-presentation', ['duScroll'])
     .directive('fcPresentation', function($document, $timeout, $window) {
         return {
             restrict: 'E',
