@@ -1,142 +1,133 @@
+'use strict';
+// Source: src/directives/fc-presentation.js
 /**
  * FC presentation
  *
  * @author Mark Cremer <mark@firstcoders.co.uk>
  */
 (function() {
-    'use strict';
-    angular.module('fc-presentation', ['duScroll'])
-        .directive('fcPresentation', ['$document', '$timeout', '$window', function($document, $timeout, $window) {
-            return {
-                restrict: 'E',
-                transclude: true,
-                replace: true,
-                controller: ['$scope', function($scope) {
-                    $scope.slides      = [];
-                    $scope.activeSlide = 0;
+angular.module('fc-presentation', ['duScroll'])
+    .directive('fcPresentation', ['$document', '$timeout', '$window', function($document, $timeout, $window) {
+        return {
+            restrict: 'E',
+            transclude: true,
+            replace: true,
+            controller: ['$scope', function($scope) {
+                $scope.slides      = [];
+                $scope.activeSlide = 0;
 
-                    this.registerSlide = function(slide) {
-                        $scope.slides.push(slide);
-                    };
+                this.registerSlide = function(slide) {
+                    $scope.slides.push(slide);
+                };
 
-                    this.isActive = function(slide) {
-                        return $scope.slides[$scope.activeSlide] === slide;
-                    };
-                }],
-                link: function($scope) {
-                    var body, viewport, timeout;
+                this.isActive = function(slide) {
+                    return $scope.slides[$scope.activeSlide] === slide;
+                };
 
-                    body = $document[0].body;
-                    viewport = angular.element($document);
+                var move = function() {
+                    $scope.slideTo($scope.activeSlide);
+                };
 
-                    /**
-                     * @see http://stackoverflow.com/questions/871399/cross-browser-method-for-detecting-the-scrolltop-of-the-browser-window
-                     * @return {Integer}
-                     */
-                    function getScrollTop() {
-                        if(typeof $window.pageYOffset!= 'undefined'){
-                            //most browsers except IE before #9
-                            return $window.pageYOffset;
-                        }
-                        else{
-                            var B= $document.body; //IE 'quirks'
-                            var D= $document.documentElement; //IE with doctype
-                            D= (D.clientHeight)? D: B;
-                            return D.scrollTop;
-                        }
+                $scope.slideTo = function(i) {
+                    $document.scrollToElement($scope.slides[i], 0, 500);
+                    $scope.activeSlide = i;
+                };
+
+                $scope.hasNext = function() {
+                    return $scope.activeSlide < $scope.slides.length -1;
+                };
+
+                $scope.hasPrevious = function() {
+                    return $scope.activeSlide > 0;
+                };
+
+                $scope.prev = function() {
+                    if ($scope.hasPrevious()) {
+                        $scope.activeSlide--;
                     }
+                    move();
+                };
 
-                    var scrollspy = function(e) {
-                        var scrollHeight, scrollTop;
+                $scope.next = function() {
+                    if ($scope.hasNext()) {
+                        $scope.activeSlide++;
+                    }
+                    move();
+                };
+            }],
+            link: function($scope, elem, attr, ctrl) {
+                var body, $win, isChecking, top;
 
-                        scrollHeight = body.scrollHeight;
-                        scrollTop    = getScrollTop();
+                body = $document[0].body;
+                $win = angular.element($window);
+                top = parseInt(attr.fcPresentationTop) || 0;
 
-                        if (timeout) {
-                            $timeout.cancel(timeout);
-                        }
+                function isSlideVisible(el) {
+                    var rect = el[0].getBoundingClientRect();
 
-                        timeout = $timeout(function() {
+                    return (
+                        rect.top <= top &&
+                        rect.bottom >= 0
+                    );
+                }
+
+                var handleScroll = function(e) {
+                    if (!isChecking) {
+                        isChecking = true;
+                        $timeout(function() {
                             angular.forEach($scope.slides, function(slideEl, index) {
-                                if (slideEl[0].getBoundingClientRect().top <= 0 &&
-                                    slideEl[0].getBoundingClientRect().bottom >= 0
-                                ) {
+                                if (isSlideVisible(slideEl)) {
                                     $scope.activeSlide = index;
                                 }
                             });
-                        }, 10);
-                    };
+                            isChecking = false;
+                        }, 100);
+                    }
+                };
 
-                    viewport.bind('wheel', scrollspy);
+                $win.on("scroll", handleScroll);
 
-                    //execute once on load
-                    scrollspy();
+                $scope.$on('$destroy', function() {
+                    $win.off("scroll", handleScroll);
+                });
 
-                    var move = function() {
-                        $scope.slideTo($scope.activeSlide);
-                    };
+                //execute once on load
+                handleScroll();
+            },
+            template:   '<div class="fc-presentation fc-presentation-slide-active-{{activeSlide}}">' +
+                            '<div ng-transclude class="fc-presentation-content"></div>' +
+                        '</div>'
+        };
+    }])
 
-                    $scope.slideTo = function(i) {
-                        $document.scrollToElement($scope.slides[i], 0, 500);
-                        $scope.activeSlide = i;
-                    };
+    .directive('fcPresentationSlide', function() {
+        return {
+            restrict: 'E',
+            require: '^fcPresentation',
+            transclude: true,
+            replace: true,
+            scope: true,
+            link: function($scope, element, attr, parent) {
+                parent.registerSlide(element);
 
-                    $scope.hasNext = function() {
-                        return $scope.activeSlide < $scope.slides.length -1;
-                    };
+                $scope.isActive = function() {
+                    return parent.isActive(element);
+                };
+            },
+            template: '<div class="fc-presentation-slide" ng-class="{active:isActive()}" ng-transclude></div>'
+        };
+    })
 
-                    $scope.hasPrevious = function() {
-                        return $scope.activeSlide > 0;
-                    };
+    .directive('fcPresentationControls', function() {
+        return {
+            restrict: 'E',
+            require: '^fcPresentation',
+            transclude: true,
+            replace: true,
+            template: '<div class="fc-presentation-controls" ng-transclude></div>'
+        };
+    })
 
-                    $scope.prev = function() {
-                        if ($scope.hasPrevious()) {
-                            $scope.activeSlide--;
-                        }
-                        move();
-                    };
-
-                    $scope.next = function() {
-                        if ($scope.hasNext()) {
-                            $scope.activeSlide++;
-                        }
-                        move();
-                    };
-                },
-                template:   '<div class="fc-presentation fc-presentation-slide-active-{{activeSlide}}">' +
-                                '<div ng-transclude class="fc-presentation-content"></div>' +
-                            '</div>'
-            };
-        }])
-
-        .directive('fcPresentationSlide', function() {
-            return {
-                restrict: 'E',
-                require: '^fcPresentation',
-                transclude: true,
-                replace: true,
-                scope: true,
-                link: function($scope, element, attr, parent) {
-                    parent.registerSlide(element);
-
-                    $scope.isActive = function() {
-                        return parent.isActive(element);
-                    };
-                },
-                template: '<div class="fc-presentation-slide" ng-class="{active:isActive()}" ng-transclude></div>'
-            };
-        })
-
-        .directive('fcPresentationControls', function() {
-            return {
-                restrict: 'E',
-                require: '^fcPresentation',
-                transclude: true,
-                replace: true,
-                template: '<div class="fc-presentation-controls" ng-transclude></div>'
-            };
-        })
-
-        ;
+    ;
 
 })();

@@ -18,7 +18,6 @@ describe("FcPresentation directive Test", function() {
         $elem         = angular.element(testMarkup);
         $scope        = $rootScope.$new();
         $doc          = _$document_;
-        $scope.loader = mockLoader;
 
         elem = $compile($elem)($scope);
 
@@ -32,8 +31,8 @@ describe("FcPresentation directive Test", function() {
         expect($elem.hasClass('fc-presentation-slide-active-0')).toBe(true);
 
         var slides = angular.element($elem.children().children());
-        expect(angular.element(slides[0]).hasClass('presentation-slide')).toBe(true);
-        expect(angular.element(slides[1]).hasClass('presentation-slide')).toBe(true);
+        expect(angular.element(slides[0]).hasClass('fc-presentation-slide')).toBe(true);
+        expect(angular.element(slides[1]).hasClass('fc-presentation-slide')).toBe(true);
     });
 
     it('Should set an active class when a slide is visible', function() {

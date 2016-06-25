@@ -23,55 +23,6 @@
                 this.isActive = function(slide) {
                     return $scope.slides[$scope.activeSlide] === slide;
                 };
-            },
-            link: function($scope) {
-                var body, viewport, timeout;
-
-                body = $document[0].body;
-                viewport = angular.element($document);
-
-                /**
-                 * @see http://stackoverflow.com/questions/871399/cross-browser-method-for-detecting-the-scrolltop-of-the-browser-window
-                 * @return {Integer}
-                 */
-                function getScrollTop() {
-                    if(typeof $window.pageYOffset!= 'undefined'){
-                        //most browsers except IE before #9
-                        return $window.pageYOffset;
-                    }
-                    else{
-                        var B= $document.body; //IE 'quirks'
-                        var D= $document.documentElement; //IE with doctype
-                        D= (D.clientHeight)? D: B;
-                        return D.scrollTop;
-                    }
-                }
-
-                var scrollspy = function(e) {
-                    var scrollHeight, scrollTop;
-
-                    scrollHeight = body.scrollHeight;
-                    scrollTop    = getScrollTop();
-
-                    if (timeout) {
-                        $timeout.cancel(timeout);
-                    }
-
-                    timeout = $timeout(function() {
-                        angular.forEach($scope.slides, function(slideEl, index) {
-                            if (slideEl[0].getBoundingClientRect().top <= 0 &&
-                                slideEl[0].getBoundingClientRect().bottom >= 0
-                            ) {
-                                $scope.activeSlide = index;
-                            }
-                        });
-                    }, 10);
-                };
-
-                viewport.bind('wheel', scrollspy);
-
-                //execute once on load
-                scrollspy();
 
                 var move = function() {
                     $scope.slideTo($scope.activeSlide);
@@ -103,6 +54,45 @@
                     }
                     move();
                 };
+            },
+            link: function($scope, elem, attr, ctrl) {
+                var body, $win, isChecking, top;
+
+                body = $document[0].body;
+                $win = angular.element($window);
+                top = parseInt(attr.fcPresentationTop) || 0;
+
+                function isSlideVisible(el) {
+                    var rect = el[0].getBoundingClientRect();
+
+                    return (
+                        rect.top <= top &&
+                        rect.bottom >= 0
+                    );
+                }
+
+                var handleScroll = function(e) {
+                    if (!isChecking) {
+                        isChecking = true;
+                        $timeout(function() {
+                            angular.forEach($scope.slides, function(slideEl, index) {
+                                if (isSlideVisible(slideEl)) {
+                                    $scope.activeSlide = index;
+                                }
+                            });
+                            isChecking = false;
+                        }, 100);
+                    }
+                };
+
+                $win.on("scroll", handleScroll);
+
+                $scope.$on('$destroy', function() {
+                    $win.off("scroll", handleScroll);
+                });
+
+                //execute once on load
+                handleScroll();
             },
             template:   '<div class="fc-presentation fc-presentation-slide-active-{{activeSlide}}">' +
                             '<div ng-transclude class="fc-presentation-content"></div>' +
