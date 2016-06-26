@@ -13,8 +13,7 @@
             transclude: true,
             replace: true,
             controller: function($scope) {
-                $scope.slides      = [];
-                $scope.activeSlide = 0;
+                $scope.slides = [];
 
                 this.registerSlide = function(slide) {
                     $scope.slides.push(slide);
@@ -56,11 +55,12 @@
                 };
             },
             link: function($scope, elem, attr, ctrl) {
-                var body, $win, isChecking, top;
+                var body, $win, isChecking, top, delay;
 
                 body = $document[0].body;
                 $win = angular.element($window);
                 top = parseInt(attr.fcPresentationTop) || 0;
+                delay = parseInt(attr.delay) || 250;
 
                 function isSlideVisible(el) {
                     var rect = el[0].getBoundingClientRect();
@@ -92,7 +92,10 @@
                 });
 
                 //execute once on load
-                handleScroll();
+                $timeout(function() {
+                    handleScroll();
+                }, delay);
+
             },
             template:   '<div class="fc-presentation fc-presentation-slide-active-{{activeSlide}}">' +
                             '<div ng-transclude class="fc-presentation-content"></div>' +
